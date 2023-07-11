@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_customerservice.VF_IDMEmailUtils</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description>Utils script for IDM Email Integration processes</description>
+        <name>VF_IDMEmailUtils</name>
+        <script><![CDATA[var VF_IDMEmailUtils = Class.create();
+VF_IDMEmailUtils.prototype = {
+	initialize: function() {
+	},
+
+	/**
+	* Checks a payload for mail script style ${variable} and replaces them with the related record data
+	*
+	* @param {string} recordId - Sys ID of the 'current' record from the mail script
+	* @param {string} payload - parm2 of the event record that triggered the notification
+	* @param {string} partner - parm1 of the event record, contains the partner assignment group
+	*
+	* returns {string} processedBody - Updated payload with ${variable} matches replaced with 'current' data
+	**/
+
+	processIDMRegex: function(recordId, payload, partner) {
+		// Get GlideRecord of 'current'
+		var current = new GlideRecord('sn_customerservice_case');
+		current.get(recordId);
+
+		var processedBody = payload;
+		var variableRegex = /\$\{(?:mail_script:)?([^}]+)\}/g; // Regex to pull any ${variable} instances from a string
+		var match;
+
+		// Regex loop for checking matches in the payload
+		while ((match = variableRegex.exec(processedBody))!== null) {
+			if (match[0].startsWith('${mail_script:')) {
+				// If the match has come from ${mail_script} then call the related function in this script include
+				var mailScript = match[1];
+				var scriptReturn = this[mailScript](current.getUniqueValue(), partner);
+				processedBody = processedBody.replace(match[0], scriptReturn.toString());
+			} else {
+				// If the match has come from ${variable}
+				var variableName = match[1]; // Extract the variable name from the matched pattern
+				
+				// Check if 'current' has the corresponding field
+				if (current.isValidField(variableName)) {
+					// Replace the variable pattern with the field display value in the string
+					processedBody = processedBody.replace(match[0], current.getDisplayValue(variableName));
+				}
+			}
+			// Reset the lastIndex of the regex to avoid an infinite loop
+            variableRegex.lastIndex = match.index + 1;
+		}
+		
+		/*
+		// Weird SN bug caused GS subject line to sometimes not match on ${number} or ${short_description}. Force a check and update here
+		if (processedBody.indexOf('${number}') != -1) {
+			processedBody = processedBody.replace('${number}', current.getDisplayValue('number'));
+		}
+		if (processedBody.indexOf('${short_description}') != -1) {
+			processedBody = processedBody.replace('${short_description}', current.getDisplayValue('short_description'));
+		}
+		// Another weird SN bug caused FS body to never match on ${mail_script}. Force a check and update here
+		if (processedBody.indexOf('${mail_script:') != -1) {
+			var scriptToRun = processedBody.substring(processedBody.indexOf('${mail_script:'), processedBody.indexOf('}'));
+			scriptToRun = scriptToRun.replace('${mail_script:', '');
+			scriptToRun = scriptToRun.replace('}', '');
+			
+			processedBody = processedBody.replace(scriptToRun, this[scriptToRun](current.getUniqueValue(), partner));
+		} */
+
+		return processedBody;
+	},
+
+	/**
+	* Replaces 'latest_comment' mail_script functionality for dynamic outbound emails
+	*
+	* @param {string} recordId - Sys ID of the 'current' record from the mail script
+	* @param {string} partner - parm1 of the event record, contains the partner assignment group
+	*
+	* returns {string} comment - Pass latest comment back to email script
+	**/
+
+	latest_comment: function (recordId, partner) {
+		// Get GlideRecord of 'current'
+		var current = new GlideRecord('sn_customerservice_case');
+		current.get(recordId);
+
+		// Only need to return getJournalEntry(1)
+		return current.comments_and_work_notes.getJournalEntry(1);
+	},
+
+	/**
+	* Replaces 'latest_work_note' mail_script functionality for dynamic outbound emails
+	*
+	* @param {string} recordId - Sys ID of the 'current' record from the mail script
+	* @param {string} partner - parm1 of the event record, contains the partner assignment group
+	*
+	* returns {string} notes - Pass the latest notes back to email script
+	**/
+
+	latest_work_note: function (recordId, partner) {
+		// Get GlideRecord of 'current'
+		var current = new GlideRecord('sn_customerservice_case');
+		current.get(recordId);
+
+		// Get the latest journal entry from work notes
+		var notes = current.work_notes.getJournalEntry(1);
+		notes = notes.replaceAll('[code]','');
+		notes = notes.replaceAll('[/code]','');
+		notes = notes.replaceAll(/<a\s.*?>/g, "<p>");
+		notes = notes.replaceAll(/<\/a>/g, "</p>");
+
+		return notes;
+	},
+	
+	/**
+	* Creates 'work_note_history' mail_script functionality for dynamic outbound emails. Did not currently exist
+	*
+	* @param {string} recordId - Sys ID of the 'current' record from the mail script
+	* @param {string} partner - parm1 of the event record, contains the partner assignment group
+	*
+	* returns {string} notes - Pass the notes history back to email script
+	**/
+
+	work_note_history: function (recordId, partner) {
+		// Get GlideRecord of 'current'
+		var current = new GlideRecord('sn_customerservice_case');
+		current.get(recordId);
+
+		// Get the latest journal entry from work notes
+		var notes = current.work_notes.getJournalEntry(-1);
+		notes = notes.replaceAll('[code]','');
+		notes = notes.replaceAll('[/code]','');
+		notes = notes.replaceAll(/<a\s.*?>/g, "<p>");
+		notes = notes.replaceAll(/<\/a>/g, "</p>");
+
+		return notes;
+	},
+
+	/**
+	* Replaces 'priority_value' mail_script functionality for dynamic outbound emails
+	*
+	* @param {string} recordId - Sys ID of the 'current' record from the mail script
+	* @param {string} partner - parm1 of the event record, contains the partner assignment group
+	*
+	* returns {integer} current.priority++ - Pass incremented value in as per mail script
+	**/
+
+	priority_value: function (recordId, partner) {
+		// Get GlideRecord of 'current'
+		var current = new GlideRecord('sn_customerservice_case');
+		current.get(recordId);
+
+		// Update Severity value to align with label value
+		return current.priority++;
+	},
+
+	/**
+	* Replaces 'vf_check_gs_correlationID' mail_script functionality and makes it more generic for dynamic outbound emails
+	*
+	* @param {string} recordId - Sys ID of the 'current' record from the mail script
+	* @param {string} partner - parm1 of the event record, contains the partner assignment group
+	*
+	* returns {integer} current.priority++ - Pass incremented value in as per mail script
+	**/
+	
+	get_correlationID: function (recordId, partner) {
+		// Get GlideRecord of 'current' Task that is receiving the email
+		var current = new GlideRecord('sn_customerservice_task');
+		current.addQuery('parent', recordId);
+		current.addQuery('assignment_group', partner);
+		current.query();
+
+		if (current.next()) {
+			// Update Severity value to align with label value
+			return current.correlation_id;
+		} else {
+			return;
+		}
+	},
+
+	type: 'VF_IDMEmailUtils'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>vf.jarrod.ocallaghan</sys_created_by>
+        <sys_created_on>2023-05-30 11:21:17</sys_created_on>
+        <sys_id>1bb021f61bc7e1d0418e0fe8dc4bcb66</sys_id>
+        <sys_mod_count>47</sys_mod_count>
+        <sys_name>VF_IDMEmailUtils</sys_name>
+        <sys_package display_value="Customer Service" source="sn_customerservice">51d811fad7223100b7490ee60e61034f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Customer Service">51d811fad7223100b7490ee60e61034f</sys_scope>
+        <sys_update_name>sys_script_include_1bb021f61bc7e1d0418e0fe8dc4bcb66</sys_update_name>
+        <sys_updated_by>vf.jarrod.ocallaghan</sys_updated_by>
+        <sys_updated_on>2023-06-26 12:12:04</sys_updated_on>
+    </sys_script_include>
+    <sys_claim action="INSERT_OR_UPDATE">
+        <claim_owner_scope display_value="Customer Service">51d811fad7223100b7490ee60e61034f</claim_owner_scope>
+        <claim_timestamp>189430a461e0000001</claim_timestamp>
+        <metadata_update_name>sys_script_include_1bb021f61bc7e1d0418e0fe8dc4bcb66</metadata_update_name>
+        <previous_claim_app_version>23.8.2</previous_claim_app_version>
+        <previous_claim_name>Customer Service</previous_claim_name>
+        <previous_claim_scope>51d811fad7223100b7490ee60e61034f</previous_claim_scope>
+        <sys_created_by>vf.jarrod.ocallaghan</sys_created_by>
+        <sys_created_on>2023-07-11 03:41:34</sys_created_on>
+        <sys_id>3daa405c1b08f1104dc010ea274bcb8b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>vf.jarrod.ocallaghan</sys_updated_by>
+        <sys_updated_on>2023-07-11 03:41:34</sys_updated_on>
+    </sys_claim>
+</record_update>
