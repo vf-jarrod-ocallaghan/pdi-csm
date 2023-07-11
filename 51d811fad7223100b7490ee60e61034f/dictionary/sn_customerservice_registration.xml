@@ -1,3 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><database>
-    <element db_object_id="5eba0c81db8fe740db57f2353a9619f4" label="Registration Request" max_length="40" name="sn_customerservice_registration" type="collection"/>
+    <element db_object_id="5eba0c81db8fe740db57f2353a9619f4" label="Registration Request" max_length="40" name="sn_customerservice_registration" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="First Name" mandatory="true" max_length="50" name="first_name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Last Name" mandatory="true" max_length="50" name="last_name" type="string"/>
+    </element>
 </database>
