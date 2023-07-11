@@ -12,6 +12,7 @@ VF_IDMEmailUtils.prototype = {
 	initialize: function() {
 	},
 
+	// Adding a comment to commit to git testing
 	/**
 	* Checks a payload for mail script style ${variable} and replaces them with the related record data
 	*
