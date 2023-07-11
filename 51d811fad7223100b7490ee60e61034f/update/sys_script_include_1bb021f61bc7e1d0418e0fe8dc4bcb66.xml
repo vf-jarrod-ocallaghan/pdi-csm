@@ -13,6 +13,9 @@ VF_IDMEmailUtils.prototype = {
 	},
 
 	// Adding a comment to commit to git testing
+
+	// Adding VSCode comment to test git/VSCode integration
+	
 	/**
 	* Checks a payload for mail script style ${variable} and replaces them with the related record data
 	*
