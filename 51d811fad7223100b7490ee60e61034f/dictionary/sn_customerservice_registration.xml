@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element db_object_id="5eba0c81db8fe740db57f2353a9619f4" label="Registration Request" max_length="40" name="sn_customerservice_registration" type="collection"/>
+</database>
