@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="ua_table_licensing_config">
+    <ua_table_licensing_config action="INSERT_OR_UPDATE">
+        <is_fulfillment>false</is_fulfillment>
+        <license_condition/>
+        <license_model>none</license_model>
+        <license_roles/>
+        <name>sn_customerservice_case_report</name>
+        <op_delete>true</op_delete>
+        <op_insert>true</op_insert>
+        <op_update>true</op_update>
+        <owner_condition/>
+        <sys_class_name>ua_table_licensing_config</sys_class_name>
+        <sys_created_by>system</sys_created_by>
+        <sys_created_on>2019-01-15 01:10:53</sys_created_on>
+        <sys_id>540cc48ddb8fe740db57f2353a96193d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>sn_customerservice_case_report</sys_name>
+        <sys_package display_value="Customer Service" source="sn_customerservice">51d811fad7223100b7490ee60e61034f</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Customer Service">51d811fad7223100b7490ee60e61034f</sys_scope>
+        <sys_update_name>ua_table_licensing_config_540cc48ddb8fe740db57f2353a96193d</sys_update_name>
+        <sys_updated_by>system</sys_updated_by>
+        <sys_updated_on>2019-01-15 01:10:53</sys_updated_on>
+    </ua_table_licensing_config>
+    <sys_claim action="INSERT_OR_UPDATE">
+        <claim_owner_scope display_value="Customer Service">51d811fad7223100b7490ee60e61034f</claim_owner_scope>
+        <claim_timestamp>189428d81040000001</claim_timestamp>
+        <metadata_update_name>ua_table_licensing_config_540cc48ddb8fe740db57f2353a96193d</metadata_update_name>
+        <previous_claim_app_version>23.8.2</previous_claim_app_version>
+        <previous_claim_name>Customer Service</previous_claim_name>
+        <previous_claim_scope>51d811fad7223100b7490ee60e61034f</previous_claim_scope>
+        <sys_created_by>vf.jarrod.ocallaghan</sys_created_by>
+        <sys_created_on>2023-07-11 01:25:17</sys_created_on>
+        <sys_id>ad7be7801bc4f1104dc010ea274bcb73</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>vf.jarrod.ocallaghan</sys_updated_by>
+        <sys_updated_on>2023-07-11 01:25:17</sys_updated_on>
+    </sys_claim>
+</record_update>
